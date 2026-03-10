@@ -11,5 +11,4 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductResponse {
     private List<ProductDTO> content;
-
 }
