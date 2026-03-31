@@ -54,7 +54,7 @@ const AddressList = ({ addresses, setSelectedAddress, setOpenAddressModal }) => 
 
                         <div className="flex items-center ">
                             <MdPinDrop size={17} className='mr-2 text-gray-600' />
-                            <p>{address.pincode}</p>
+                            <p>{address.pinCode}</p>
                         </div>
 
                         <div className="flex items-center ">
