@@ -160,7 +160,13 @@ export const logOutUser = (navigate) => (dispatch) => {
 };
 
 export const addUpdateUserAddress =
-    (sendData, toast, addressId, setOpenAddressModal) => async (dispatch, getState) => {
+     (sendData, toast, addressId, setOpenAddressModal) => async (dispatch, getState) => {
+    /*
+    const { user } = getState().auth;
+    await api.post(`/addresses`, sendData, {
+          headers: { Authorization: "Bearer " + user.jwtToken },
+        });
+    */
     dispatch({ type:"BUTTON_LOADER" });
     try {
         if (!addressId) {
@@ -180,27 +186,6 @@ export const addUpdateUserAddress =
     }
 };
 
-export const getUserAddresses = () => async (dispatch, getState) => {
-    try {
-        dispatch({ type: "IS_FETCHING" });
-        const { data } = await api.get(`/addresses`);
-        dispatch({type: "USER_ADDRESS", payload: data});
-        dispatch({ type: "IS_SUCCESS" });
-    } catch (error) {
-        console.log(error);
-        dispatch({ 
-            type: "IS_ERROR",
-            payload: error?.response?.data?.message || "Failed to fetch user addresses",
-         });
-    }
-};
-
-export const selectUserCheckoutAddress = (address) => {
-    return {
-        type: "SELECT_CHECKOUT_ADDRESS",
-        payload: address,
-    }
-};
 
 export const deleteUserAddress = 
     (toast, addressId, setOpenDeleteModal) => async (dispatch, getState) => {
@@ -228,12 +213,38 @@ export const clearCheckoutAddress = () => {
     }
 };
 
+export const getUserAddresses = () => async (dispatch, getState) => {
+    try {
+        dispatch({ type: "IS_FETCHING" });
+        const { data } = await api.get(`/addresses`);
+        dispatch({type: "USER_ADDRESS", payload: data});
+        dispatch({ type: "IS_SUCCESS" });
+    } catch (error) {
+        console.log(error);
+        dispatch({ 
+            type: "IS_ERROR",
+            payload: error?.response?.data?.message || "Failed to fetch user addresses",
+         });
+    }
+};
+
+export const selectUserCheckoutAddress = (address) => {
+    localStorage.setItem("CHECKOUT_ADDRESS", JSON.stringify(address));
+    
+    return {
+        type: "SELECT_CHECKOUT_ADDRESS",
+        payload: address,
+    }
+};
+
+
 export const addPaymentMethod = (method) => {
     return {
         type: "ADD_PAYMENT_METHOD",
         payload: method,
     }
 };
+
 
 export const createUserCart = (sendCartItems) => async (dispatch, getState) => {
     try {
@@ -272,6 +283,7 @@ export const getUserCart = () => async (dispatch, getState) => {
     }
 };
 
+
 export const createStripePaymentSecret 
     = (totalPrice) => async (dispatch, getState) => {
         try {
@@ -280,11 +292,30 @@ export const createStripePaymentSecret
                 "amount": Number(totalPrice) * 100,
                 "currency": "usd"
               });
-              dispatch({ type: "CLIENT_SECRET", payload: data });
+            dispatch({ type: "CLIENT_SECRET", payload: data });
               localStorage.setItem("client-secret", JSON.stringify(data));
               dispatch({ type: "IS_SUCCESS" });
         } catch (error) {
             console.log(error);
             toast.error(error?.response?.data?.message || "Failed to create client secret");
+        }
+};
+
+
+export const stripePaymentConfirmation 
+    = (sendData, setErrorMesssage, setLoadng, toast) => async (dispatch, getState) => {
+        try {
+            const { response } = await api.post("/order/users/payments/online", sendData);
+              if (response.data) {
+                localStorage.removeItem("cartItems");
+                localStorage.removeItem("client-secret");
+                dispatch({ type: "REMOVE_CLIENT_SECRET_ADDRESS"});
+                dispatch({ type: "CLEAR_CART"});
+                toast.success("Order Accepted");
+              } else {
+                setErrorMesssage("Payment Failed. Please try again.");
+              }
+        } catch (error) {
+            setErrorMesssage("Payment Failed. Please try again.");
         }
 };
