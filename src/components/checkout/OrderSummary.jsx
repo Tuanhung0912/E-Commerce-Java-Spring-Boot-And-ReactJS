@@ -85,7 +85,7 @@ const OrderSummary = ({ totalPrice, cart, address, paymentMethod}) => {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Products</span>
-                <span>${totalPrice}</span>
+                {/* <span>${totalPrice}</span> */}
                 <span>${formatPriceCalculation(totalPrice, 1)}</span>
               </div>
               <div className="flex justify-between">
@@ -94,7 +94,7 @@ const OrderSummary = ({ totalPrice, cart, address, paymentMethod}) => {
               </div>
               <div className="flex justify-between font-semibold">
                 <span>SubTotal</span>
-                <span>${totalPrice}</span>
+                {/* <span>${totalPrice}</span> */}
                 <span>${formatPriceCalculation(totalPrice, 1)}</span>
               </div>
             </div>
