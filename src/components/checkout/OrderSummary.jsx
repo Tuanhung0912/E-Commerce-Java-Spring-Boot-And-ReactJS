@@ -52,7 +52,7 @@ const OrderSummary = ({ totalPrice, cart, address, paymentMethod}) => {
                          className='flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-200'>
                         <div className='w-16 h-16 shrink-0 overflow-hidden rounded-lg border border-gray-200'>
                             <img 
-                                src={`${import.meta.env.VITE_IMAGE_URL}/${item?.image}`}
+                                src={item?.image?.startsWith('http') ? item.image : `${import.meta.env.VITE_IMAGE_URL}/${item?.image?.replace(/^\/+/, '')}`}
                                 alt={item?.productName}
                                 className='w-full h-full object-cover'
                             />
