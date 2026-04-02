@@ -1,10 +1,7 @@
 package com.ecommerce.project.Controller;
 
 import com.ecommerce.project.config.AppConstants;
-import com.ecommerce.project.payload.OrderDTO;
-import com.ecommerce.project.payload.OrderRequestDTO;
-import com.ecommerce.project.payload.OrderResponse;
-import com.ecommerce.project.payload.StripePaymentDTO;
+import com.ecommerce.project.payload.*;
 import com.ecommerce.project.service.OrderService;
 import com.ecommerce.project.service.StripeService;
 import com.ecommerce.project.util.AuthUtil;
@@ -68,6 +65,13 @@ public class OrderController {
     ) {
         OrderResponse orderResponse = orderService.getAllOrders(pageNumber, pageSize, sortBy, sortOrder);
         return new ResponseEntity<OrderResponse>(orderResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/admin/orders/{orderId}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Long orderId,
+                                                      @RequestBody OrderStatusUpdateDTO orderStatusUpdateDTO) {
+        OrderDTO order = orderService.updateOrder(orderId, orderStatusUpdateDTO.getStatus());
+        return new ResponseEntity<OrderDTO>(order, HttpStatus.OK);
     }
 }
 
