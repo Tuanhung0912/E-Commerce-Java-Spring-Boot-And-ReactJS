@@ -96,7 +96,7 @@ public class ProductController {
 
     @Tag(name = "Product APIs", description = "APIs for managing products")
     @Operation(summary = "Update image product", description = "API to update image product")
-    @PutMapping(value = "/products/{productId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/admin/products/{productId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductDTO> updateProductImage(@PathVariable Long productId,
                                                          @RequestParam("image")MultipartFile image) throws IOException {
         ProductDTO updatedProduct = productService.updateProductImage(productId, image);
