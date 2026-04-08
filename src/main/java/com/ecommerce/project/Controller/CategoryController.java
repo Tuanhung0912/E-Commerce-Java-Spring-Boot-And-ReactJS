@@ -1,7 +1,6 @@
 package com.ecommerce.project.Controller;
 
 import com.ecommerce.project.config.AppConstants;
-import com.ecommerce.project.model.Category;
 import com.ecommerce.project.payload.CategoryDTO;
 import com.ecommerce.project.payload.CategoryResponse;
 import com.ecommerce.project.service.CategoryService;
@@ -12,12 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.lang.classfile.Interfaces;
-import java.util.ArrayList;
-import java.util.List;
-
 
 @RestController
 @RequestMapping("/api")
@@ -26,21 +19,19 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
-
     @Tag(name = "Category APIs", description = "APIs for managing categories")
     @Operation(summary = "Get all categories", description = "API to view all categories")
     @GetMapping("/public/categories")
-    //@RequestMapping(value = "/public/categories", method = RequestMethod.GET)
+    // @RequestMapping(value = "/public/categories", method = RequestMethod.GET)
     public ResponseEntity<CategoryResponse> getAllCategories(
             @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
             @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_CATEGORIES_BY, required = false) String sortBy,
-            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder){
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder) {
 
         CategoryResponse categoryResponse = categoryService.getAllCategories(pageNumber, pageSize, sortBy, sortOrder);
         return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
@@ -49,10 +40,10 @@ public class CategoryController {
     @Tag(name = "Category APIs", description = "APIs for managing categories")
     @Operation(summary = "Create category", description = "API to create a new category")
     @PostMapping("/admin/categories")
-    //@RequestMapping(value = "/public/categories", method = RequestMethod.POST)
+    // @RequestMapping(value = "/public/categories", method = RequestMethod.POST)
     public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
         CategoryDTO savedCategoryDTO = categoryService.createCategory(categoryDTO);
-        return new ResponseEntity<>(savedCategoryDTO,HttpStatus.CREATED);
+        return new ResponseEntity<>(savedCategoryDTO, HttpStatus.CREATED);
     }
 
     @Tag(name = "Category APIs", description = "APIs for managing categories")
@@ -67,7 +58,7 @@ public class CategoryController {
     @Operation(summary = "Update category", description = "API to update a category")
     @PutMapping("/admin/categories/{categoryId}")
     public ResponseEntity<CategoryDTO> updateCategory(@RequestBody CategoryDTO categoryDTO,
-                                                 @PathVariable Long categoryId) {
+            @PathVariable Long categoryId) {
         CategoryDTO savedCategoryDTO = categoryService.updateCategory(categoryDTO, categoryId);
         return new ResponseEntity<>(savedCategoryDTO, HttpStatus.OK);
 

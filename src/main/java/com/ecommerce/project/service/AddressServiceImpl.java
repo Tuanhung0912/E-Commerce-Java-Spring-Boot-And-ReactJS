@@ -6,8 +6,6 @@ import com.ecommerce.project.model.User;
 import com.ecommerce.project.payload.AddressDTO;
 import com.ecommerce.project.repositories.AddressRepository;
 import com.ecommerce.project.repositories.UserRepository;
-import com.ecommerce.project.util.AuthUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class AddressServiceImpl implements AddressService{
+public class AddressServiceImpl implements AddressService {
     @Autowired
     private AddressRepository addressRepository;
 
@@ -24,7 +22,6 @@ public class AddressServiceImpl implements AddressService{
 
     @Autowired
     UserRepository userRepository;
-
 
     @Override
     public AddressDTO createAddress(AddressDTO addressDTO, User user) {
