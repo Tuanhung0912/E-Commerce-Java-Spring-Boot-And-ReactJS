@@ -245,28 +245,3 @@ The most complex feature with 13 endpoints serving Public, Admin, and Seller rol
 | **Data Seeding**       | Auto-creates 3 roles + 3 default users on startup                        |
 
 ---
-
-## 🗃️ Data Model
-
-```
-User ──1:N── Address       User ──1:1── Cart       User ──1:N── Product (seller)
-User ──N:M── Role          Category ──1:N── Product
-Cart ──1:N── CartItem      CartItem ──N:1── Product
-Order ──1:N── OrderItem    Order ──1:1── Payment   Order ──N:1── Address
-```
-
-**11 Entities:** User, Role, AppRole(enum), Address, Category, Product, Cart, CartItem, Order, OrderItem, Payment
-
----
-
-## 📈 Project Summary
-
-| Item            | Count                          |
-| --------------- | ------------------------------ |
-| Controllers     | 7                              |
-| Services        | 9 interface + 9 implementation |
-| Entities/Models | 11                             |
-| Repositories    | 10                             |
-| DTOs/Payloads   | 19                             |
-| API Endpoints   | ~38                            |
-| Roles           | 3                              |
