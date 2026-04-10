@@ -64,4 +64,16 @@ public class CategoryController {
 
     }
 
+    @Tag(name = "Category APIs", description = "APIs for managing categories")
+    @Operation(summary = "Admin Categories List", description = "API to manage all categories for Admin (including soft-deleted)")
+    @GetMapping("/admin/categories")
+    public ResponseEntity<CategoryResponse> getAllCategoriesForAdmin(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_CATEGORIES_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder) {
+        CategoryResponse categoryResponse = categoryService.getAllCategoriesForAdmin(pageNumber, pageSize, sortBy, sortOrder);
+        return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
+    }
+
 }

@@ -22,6 +22,9 @@ public class Category {
     @Size(min = 5, message = "Category name must contain at least 5 characters")
     private String categoryName;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Product> products;
 

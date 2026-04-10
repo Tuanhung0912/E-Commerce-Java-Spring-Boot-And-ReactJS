@@ -31,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
                 : Sort.by(sortBy).descending();
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize);
-        Page<Category> categoryPage = categoryRepository.findAll(pageDetails);
+        Page<Category> categoryPage = categoryRepository.findByIsDeletedFalse(pageDetails);
         List<Category> categories = categoryPage.getContent();
         if (categories.isEmpty())
             throw new APIException("No category created till now.");
@@ -52,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDTO createCategory(CategoryDTO categoryDTO) {
         Category category = modelMapper.map(categoryDTO, Category.class);
-        Category categoryFromDb = categoryRepository.findByCategoryName(category.getCategoryName());
+        Category categoryFromDb = categoryRepository.findByCategoryNameAndIsDeletedFalse(category.getCategoryName());
         if (categoryFromDb != null)
             throw new APIException("Category with the name " + category.getCategoryName() + " already exists!!!");
         Category savedCategory = categoryRepository.save(category);
@@ -64,7 +64,9 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
 
-        categoryRepository.delete(category);
+        // Soft delete: set isDeleted flag instead of removing from DB
+        category.setIsDeleted(true);
+        categoryRepository.save(category);
         return modelMapper.map(category, CategoryDTO.class);
     }
 
@@ -77,5 +79,30 @@ public class CategoryServiceImpl implements CategoryService {
         category.setCategoryId(categoryId);
         savedCategory = categoryRepository.save(category);
         return modelMapper.map(savedCategory, CategoryDTO.class);
+    }
+
+    @Override
+    public CategoryResponse getAllCategoriesForAdmin(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        // Admin sees ALL categories including soft-deleted ones
+        Page<Category> categoryPage = categoryRepository.findAll(pageDetails);
+        List<Category> categories = categoryPage.getContent();
+        if (categories.isEmpty())
+            throw new APIException("No category created till now.");
+        List<CategoryDTO> categoryDTOS = categories.stream()
+                .map(category -> modelMapper.map(category, CategoryDTO.class))
+                .toList();
+
+        CategoryResponse categoryResponse = new CategoryResponse();
+        categoryResponse.setContent(categoryDTOS);
+        categoryResponse.setPageNumber(categoryPage.getNumber());
+        categoryResponse.setPageSize(categoryPage.getSize());
+        categoryResponse.setTotalElements(categoryPage.getTotalElements());
+        categoryResponse.setTotalPages(categoryPage.getTotalPages());
+        categoryResponse.setLastPage(categoryPage.isLast());
+        return categoryResponse;
     }
 }

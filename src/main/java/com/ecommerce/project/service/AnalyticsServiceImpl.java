@@ -19,7 +19,7 @@ public class AnalyticsServiceImpl implements AnalyticsService{
     public AnalyticsResponse getAnalyticsData() {
         AnalyticsResponse response = new AnalyticsResponse();
 
-        long productCount = productRepository.count();
+        long productCount = productRepository.countByIsDeletedFalse();
         long totalOrders = orderRepository.count();;
         Double totalRevenue = orderRepository.getTotalRevenue();
 

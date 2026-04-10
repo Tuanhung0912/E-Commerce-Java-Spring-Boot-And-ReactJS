@@ -69,7 +69,8 @@ public class ProductServiceImpl implements ProductService {
 
         List<Product> products = category.getProducts();
         for (Product value : products) {
-            if (value.getProductName().equals(productDTO.getProductName())) {
+            if (value.getProductName().equals(productDTO.getProductName())
+                    && Boolean.FALSE.equals(value.getIsDeleted())) {
                 isProductNotPresent = false;
                 break;
             }
@@ -101,6 +102,10 @@ public class ProductServiceImpl implements ProductService {
         //Page<Product> pageProducts = productRepository.findAll(pageDetails);
         //Specification<Product> spec = Specification.where((Specification<Product>) null);
         Specification<Product> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+
+        // Filter out soft-deleted products for public view
+        spec = spec.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("isDeleted"), false));
         if (keyword != null && !keyword.isEmpty()) {
             spec = spec.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
@@ -148,7 +153,7 @@ public class ProductServiceImpl implements ProductService {
                 : Sort.by(sortBy).descending();
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
-        Page<Product> pageProducts = productRepository.findByCategoryOrderByPriceAsc(category, pageDetails);
+        Page<Product> pageProducts = productRepository.findByCategoryAndIsDeletedFalseOrderByPriceAsc(category, pageDetails);
 
         List<Product> products = pageProducts.getContent();
 
@@ -177,7 +182,7 @@ public class ProductServiceImpl implements ProductService {
                 : Sort.by(sortBy).descending();
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
-        Page<Product> pageProducts = productRepository.findByProductNameLikeIgnoreCase("%" + keyword + "%", pageDetails);
+        Page<Product> pageProducts = productRepository.findByProductNameLikeIgnoreCaseAndIsDeletedFalse("%" + keyword + "%", pageDetails);
 
         List<Product> products = pageProducts.getContent();
         List<ProductDTO> productDTOS = products.stream()
@@ -238,10 +243,13 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
 
+        // Remove product from all active carts before soft-deleting
         List<Cart> carts = cartRepository.findCartsByProductId(productId);
         carts.forEach(cart -> cartService.deleteProductFromCart(cart.getCartId(), productId));
 
-        productRepository.delete(product);
+        // Soft delete: set isDeleted flag instead of removing from DB
+        product.setIsDeleted(true);
+        productRepository.save(product);
         return modelMapper.map(product, ProductDTO.class);
     }
 
@@ -295,7 +303,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
 
         User user = authUtil.loggedInUser();
-        Page<Product> pageProducts = productRepository.findByUser(user, pageDetails);
+        Page<Product> pageProducts = productRepository.findByUserAndIsDeletedFalse(user, pageDetails);
 
         List<Product> products = pageProducts.getContent();
 
