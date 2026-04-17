@@ -8,27 +8,34 @@ const PrivateRoute = ({ publicPage = false, adminOnly = false }) => {
     const isSeller = user && user?.roles.includes("ROLE_SELLER");
     const location = useLocation();
 
+    // Public pages (login, register): redirect to home if already logged in
     if (publicPage) {
         return user ? <Navigate to="/" /> : <Outlet />
     }
 
+    // Not logged in at all → redirect to login
+    if (!user) {
+        return <Navigate to="/login" />;
+    }
+
+    // Admin-only routes: check admin/seller roles
     if (adminOnly) {
+        if (!isAdmin && !isSeller) {
+            return <Navigate to="/" replace />;
+        }
         if (isSeller && !isAdmin) {
             const sellerAllowedPaths = ["/admin/orders", "/admin/products"];
             const sellerAllowed = sellerAllowedPaths.some(path => 
                 location.pathname.startsWith(path)
             );
             if (!sellerAllowed) {
-                return <Navigate to="/" replace />
+                return <Navigate to="/" replace />;
             }
         }
     }
 
-    if (!isAdmin && !isSeller) {
-        return <Navigate to="/"/>
-    }
-    
-    return user ? <Outlet /> : <Navigate to="/login" />;
+    // User is logged in → allow access
+    return <Outlet />;
 }
 
 export default PrivateRoute
