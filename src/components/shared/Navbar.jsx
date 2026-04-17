@@ -1,5 +1,5 @@
 import { Badge } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaShoppingCart, FaSignInAlt, FaStore } from "react-icons/fa";
 import { IoIosMenu } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
@@ -10,103 +10,126 @@ import UserMenu from "../UserMenu";
 const Navbar = () => {
     const path = useLocation().pathname;
     const [navbarOpen, setNavbarOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const { cart } = useSelector((state) => state.carts);
     const { user } = useSelector((state) => state.auth);
-    
+
+    // Glass-morph on scroll
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    const navLinks = [
+        { to: "/", label: "Home" },
+        { to: "/products", label: "Products" },
+        { to: "/about", label: "About" },
+        { to: "/contact", label: "Contact" },
+    ];
+
     return (
-        <div className="h-[70px] bg-custom-gradient text-white z-50 flex items-center sticky top-0">
-            <div className="lg:px-14 sm:px-8 px-4 w-full flex justify-between">
-                <Link to="/" className="flex items-center text-2xl font-bold">
-                    <FaStore className="mr-2 text-3xl" />
-                    <span className="font-[Poppins]">E-Shop</span>
+        <nav
+            className={`h-[70px] z-50 flex items-center sticky top-0 transition-all duration-300
+                ${scrolled
+                    ? "bg-slate-900/95 backdrop-blur-md shadow-lg shadow-slate-900/20"
+                    : "bg-custom-gradient"
+                }`}
+        >
+            <div className="lg:px-14 sm:px-8 px-4 w-full flex justify-between items-center">
+                {/* ─── Logo ─────────────────────────────── */}
+                <Link to="/" className="flex items-center gap-2.5 group">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105">
+                        <FaStore className="text-lg text-white" />
+                    </div>
+                    <span className="text-xl font-bold text-white tracking-tight">
+                        E-Shop
+                    </span>
                 </Link>
 
-            <ul className={`flex sm:gap-10 gap-4 sm:items-center  text-slate-800 sm:static absolute left-0 top-[70px] sm:shadow-none shadow-md ${
-            navbarOpen ? "h-fit sm:pb-0 pb-5" : "h-0 overflow-hidden"
-          }  transition-all duration-100 sm:h-fit sm:bg-none bg-custom-gradient   text-white sm:w-fit w-full sm:flex-row flex-col px-4 sm:px-0`}>
-                <li className="font-[500] transition-all duration-150">
-                   <Link className={`${
-                    path === "/" ? "text-white font-semibold" : "text-gray-200"
-                   }`}
-                    to="/">
-                        Home
-                   </Link> 
-                </li>
+                {/* ─── Desktop + Mobile Links ──────────── */}
+                <ul
+                    className={`flex sm:gap-1 gap-1 sm:items-center text-slate-800 sm:static absolute left-0 top-[70px] sm:shadow-none shadow-xl
+                        ${navbarOpen ? "h-fit sm:pb-0 pb-5" : "h-0 overflow-hidden"}
+                        transition-all duration-300 sm:h-fit
+                        sm:bg-transparent bg-slate-900/98 backdrop-blur-lg
+                        text-white sm:w-fit w-full sm:flex-row flex-col px-4 sm:px-0`}
+                >
+                    {navLinks.map(({ to, label }) => (
+                        <li key={to}>
+                            <Link
+                                to={to}
+                                className={`relative px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 block
+                                    ${path === to
+                                        ? "text-white bg-white/15"
+                                        : "text-slate-300 hover:text-white hover:bg-white/10"
+                                    }`}
+                            >
+                                {label}
+                                {path === to && (
+                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-indigo-400 hidden sm:block" />
+                                )}
+                            </Link>
+                        </li>
+                    ))}
 
-                <li className="font-[500] transition-all duration-150">
-                   <Link className={`${
-                    path === "/products" ? "text-white font-semibold" : "text-gray-200"
-                   }`}
-                    to="/products">
-                        Products
-                   </Link> 
-                </li>
-
-
-                <li className="font-[500] transition-all duration-150">
-                   <Link className={`${
-                    path === "/about" ? "text-white font-semibold" : "text-gray-200"
-                   }`}
-                    to="/about">
-                        About
-                   </Link> 
-                </li>
-
-                <li className="font-[500] transition-all duration-150">
-                   <Link className={`${
-                    path === "/contact" ? "text-white font-semibold" : "text-gray-200"
-                   }`}
-                    to="/contact">
-                        Contact
-                   </Link> 
-                </li>
-
-                <li className="font-[500] transition-all duration-150">
-                   <Link className={`${
-                    path === "/cart" ? "text-white font-semibold" : "text-gray-200"
-                   }`}
-                    to="/cart">
-                        <Badge
-                            showZero
-                            badgeContent={cart?.length || 0}
-                            color="primary"
-                            overlap="circular"
-                            anchorOrigin={{ vertical: 'top', horizontal: 'right', }}>
-                                <FaShoppingCart size={25} />
-                        </Badge>
-                   </Link> 
-                </li>
-
-                {(user && user.id) ? (
-                    <li className="font-[500] transition-all duration-150">
-                        <UserMenu />
+                    {/* Cart */}
+                    <li>
+                        <Link
+                            to="/cart"
+                            className={`relative px-3 py-2 rounded-lg transition-all duration-200 flex items-center
+                                ${path === "/cart"
+                                    ? "text-white bg-white/15"
+                                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                                }`}
+                        >
+                            <Badge
+                                showZero
+                                badgeContent={cart?.length || 0}
+                                color="primary"
+                                overlap="circular"
+                                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            >
+                                <FaShoppingCart size={20} />
+                            </Badge>
+                        </Link>
                     </li>
-                ) : (
-                <li className="font-[500] transition-all duration-150">
-                   <Link className="flex items-center space-x-2 px-4 py-[6px] 
-                            bg-gradient-to-r from-purple-600 to-red-500 
-                            text-white font-semibold rounded-md shadow-lg 
-                            hover:from-purple-500 hover:to-red-400 transition 
-                            duration-300 ease-in-out transform "
-                    to="/login">
-                        <FaSignInAlt />
-                        <span>Login</span>
-                   </Link> 
-                </li>
-                )}
-            </ul>
 
-            <button
-                onClick={() => setNavbarOpen(!navbarOpen)}
-                className="sm:hidden flex items-center sm:mt-0 mt-2">
-                    {navbarOpen ? (
-                        <RxCross2 className="text-white text-3xl" />
+                    {/* Auth */}
+                    {(user && user.id) ? (
+                        <li className="sm:ml-1">
+                            <UserMenu />
+                        </li>
                     ) : (
-                        <IoIosMenu className="text-white text-3xl" />
+                        <li className="sm:ml-1">
+                            <Link
+                                to="/login"
+                                className="inline-flex items-center gap-2 px-5 py-2
+                                    bg-gradient-to-r from-indigo-500 to-violet-500
+                                    text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/25
+                                    hover:from-indigo-600 hover:to-violet-600 hover:shadow-indigo-500/40
+                                    transition-all duration-300 hover:scale-[1.03]"
+                            >
+                                <FaSignInAlt className="text-sm" />
+                                Login
+                            </Link>
+                        </li>
                     )}
-            </button>
+                </ul>
+
+                {/* ─── Mobile Toggle ───────────────────── */}
+                <button
+                    onClick={() => setNavbarOpen(!navbarOpen)}
+                    className="sm:hidden flex items-center justify-center h-9 w-9 rounded-lg bg-white/10 transition-colors hover:bg-white/20"
+                >
+                    {navbarOpen ? (
+                        <RxCross2 className="text-white text-xl" />
+                    ) : (
+                        <IoIosMenu className="text-white text-xl" />
+                    )}
+                </button>
             </div>
-        </div>
+        </nav>
     )
 }
 

@@ -34,89 +34,99 @@ const ProductCard = ({
         dispatch(addToCart(cartItems, 1, toast));
     };
 
+    const productData = {
+        id: productId,
+        productName,
+        image,
+        description,
+        quantity,
+        price,
+        discount,
+        specialPrice,
+    };
+
     return (
-        <div className="border rounded-lg shadow-xl overflow-hidden transition-shadow duration-300">
-            <div onClick={() => {
-                handleProductView({
-                    id: productId,
-                    productName,
-                    image,
-                    description,
-                    quantity,
-                    price,
-                    discount,
-                    specialPrice,
-                })
-            }} 
-                    className="w-full overflow-hidden aspect-[3/2]">
-                <img 
-                className="w-full h-full cursor-pointer transition-transform duration-300 transform hover:scale-105"
-                src={image}
-                alt={productName}>
-                </img>
+        <div className="group relative rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1">
+            {/* Discount badge */}
+            {discount > 0 && !about && (
+                <span className="absolute top-3 left-3 z-10 inline-flex items-center rounded-full bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow-lg shadow-rose-200">
+                    -{discount}%
+                </span>
+            )}
+
+            {/* Image */}
+            <div
+                onClick={() => handleProductView(productData)}
+                className="w-full overflow-hidden aspect-[3/2] bg-slate-50 cursor-pointer"
+            >
+                <img
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    src={image}
+                    alt={productName}
+                />
             </div>
-            <div className="p-4">
-                <h2 onClick={() => {
-                handleProductView({
-                    id: productId,
-                    productName,
-                    image,
-                    description,
-                    quantity,
-                    price,
-                    discount,
-                    specialPrice,
-                })
-            }}
-                    className="text-lg font-semibold mb-2 cursor-pointer">
+
+            {/* Content */}
+            <div className="p-5">
+                <h2
+                    onClick={() => handleProductView(productData)}
+                    className="text-base font-semibold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors duration-200 leading-tight"
+                >
                     {truncateText(productName, 50)}
                 </h2>
-                
-                <div className="min-h-20 max-h-20">
-                    <p className="text-gray-600 text-sm">
+
+                <div className="min-h-[56px] mt-2">
+                    <p className="text-slate-500 text-sm leading-relaxed">
                         {truncateText(description, 80)}
                     </p>
                 </div>
 
-            { !about && (
-                <div className="flex items-center justify-between">
-                {specialPrice ? (
-                    <div className="flex flex-col">
-                        <span className="text-gray-400 line-through">
-                            ${Number(price).toFixed(2)}
-                        </span>
-                        <span className="text-xl font-bold text-slate-700">
-                            ${Number(specialPrice).toFixed(2)}
-                        </span>
-                    </div>
-                ) : (
-                    <span className="text-xl font-bold text-slate-700">
-                        {"  "}
-                        ${Number(price).toFixed(2)}
-                    </span>
-                )}
+                {!about && (
+                    <div className="flex items-end justify-between mt-4 pt-4 border-t border-slate-100">
+                        {/* Price */}
+                        <div>
+                            {specialPrice ? (
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-slate-400 line-through">
+                                        ${Number(price).toFixed(2)}
+                                    </span>
+                                    <span className="text-xl font-bold text-slate-800">
+                                        ${Number(specialPrice).toFixed(2)}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-xl font-bold text-slate-800">
+                                    ${Number(price).toFixed(2)}
+                                </span>
+                            )}
+                        </div>
 
-                <button
-                    disabled={!isAvailable || btnLoader}
-                    onClick={() => addToCartHandler({
-                        image,
-                        productName,
-                        description,
-                        specialPrice,
-                        price,
-                        productId,
-                        quantity,
-                    })}
-                    className={`bg-blue-500 ${isAvailable ? "opacity-100 hover:bg-blue-600" : "opacity-70"}
-                        text-white py-2 px-3 rounded-lg items-center transition-colors duration-300 w-36 flex justify-center`}>
-                    <FaShoppingCart className="mr-2"/>
-                    {isAvailable ? "Add to Cart" : "Stock Out"}
-                </button>
-                </div>
-            )}
-                
+                        {/* Cart button */}
+                        <button
+                            disabled={!isAvailable || btnLoader}
+                            onClick={() => addToCartHandler({
+                                image,
+                                productName,
+                                description,
+                                specialPrice,
+                                price,
+                                productId,
+                                quantity,
+                            })}
+                            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300
+                                ${isAvailable
+                                    ? "bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 hover:shadow-indigo-300 hover:scale-[1.03]"
+                                    : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                }`}
+                        >
+                            <FaShoppingCart className="text-sm" />
+                            {isAvailable ? "Add to Cart" : "Stock Out"}
+                        </button>
+                    </div>
+                )}
             </div>
-            <ProductViewModal 
+
+            <ProductViewModal
                 open={openProductViewModal}
                 setOpen={setOpenProductViewModal}
                 product={selectedViewProduct}

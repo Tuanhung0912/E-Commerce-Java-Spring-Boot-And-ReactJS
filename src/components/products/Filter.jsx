@@ -1,6 +1,5 @@
-import { Button, FormControl, InputLabel, MenuItem, Select, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
-import { FiArrowDown, FiArrowUp, FiRefreshCw, FiSearch } from "react-icons/fi";
+import { FiArrowDown, FiArrowUp, FiRefreshCw, FiSearch, FiChevronDown } from "react-icons/fi";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 const Filter = ({ categories }) => {
@@ -8,10 +7,11 @@ const Filter = ({ categories }) => {
     const params = new URLSearchParams(searchParams);
     const pathname = useLocation().pathname;
     const navigate = useNavigate();
-    
+
     const [category, setCategory] = useState("all");
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchTerm, setSearchTerm] = useState("");
+    const [searchFocused, setSearchFocused] = useState(false);
 
     useEffect(() => {
         const currentCategory = searchParams.get("category") || "all";
@@ -23,7 +23,7 @@ const Filter = ({ categories }) => {
         setSearchTerm(currentSearchTerm);
     }, [searchParams]);
 
-    useEffect(() => { 
+    useEffect(() => {
         const handler = setTimeout(() => {
             if (searchTerm) {
                 searchParams.set("keyword", searchTerm);
@@ -52,7 +52,7 @@ const Filter = ({ categories }) => {
 
     const toggleSortOrder = () => {
         setSortOrder((prevOrder) => {
-            const newOrder = (prevOrder === "asc") ?  "desc" : "asc";
+            const newOrder = (prevOrder === "asc") ? "desc" : "asc";
             params.set("sortby", newOrder);
             navigate(`${pathname}?${params}`);
             return newOrder;
@@ -60,67 +60,89 @@ const Filter = ({ categories }) => {
     };
 
     const handleClearFilters = () => {
-        navigate({ pathname : window.location.pathname });
+        navigate({ pathname: window.location.pathname });
     };
 
+    const hasActiveFilters = searchParams.get("category") || searchParams.get("sortby") || searchParams.get("keyword");
+
     return (
-        <div className="flex lg:flex-row flex-col-reverse lg:justify-between justify-center items-center gap-4">
-            {/* SEARCH BAR */}
-            <div className="relative flex items-center 2xl:w-[450px] sm:w-[420px] w-full">
-                <input 
+        <div className="flex lg:flex-row flex-col gap-4 items-stretch lg:items-center justify-between
+            p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+
+            {/* ─── Search ─────────────────────────────── */}
+            <div className={`relative flex items-center 2xl:w-[400px] sm:w-[360px] w-full transition-all duration-300
+                ${searchFocused ? 'ring-2 ring-indigo-200' : ''} rounded-xl`}>
+                <FiSearch className={`absolute left-3.5 text-lg transition-colors duration-200
+                    ${searchFocused ? 'text-indigo-500' : 'text-slate-400'}`} />
+                <input
                     type="text"
-                    placeholder="Search Products"
+                    placeholder="Search products..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border border-gray-400 text-slate-800 rounded-md py-2 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-[#1976d2]"/>
-                <FiSearch className="absolute left-3 text-slate-800 size={20}"/>
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setSearchFocused(false)}
+                    className="w-full border border-slate-200 text-slate-700 rounded-xl py-2.5 pl-10 pr-4
+                        text-sm placeholder:text-slate-400
+                        focus:outline-none focus:border-indigo-300
+                        transition-colors duration-200"
+                />
             </div>
 
-            {/* CATEGORY SELECTION */}
-            <div className="flex sm:flex-row flex-col gap-4 items-center">
-                <FormControl
-                    className="text-slate-800 border-slate-700"
-                    variant="outlined"
-                    size="small">
-                        <InputLabel id="category-select-label">Category</InputLabel>
-                        <Select
-                            labelId="category-select-label"
-                            value={category}
-                            onChange={handleCategoryChange}
-                            label="Category"
-                            className="min-w-[120px] text-slate-800 border-slate-700"
-                         >
-                            <MenuItem value="all">All</MenuItem>
-                            {categories.map((item) => (
-                                <MenuItem key={item.categoryId} value={item.categoryName}>
-                                    {item.categoryName}
-                                </MenuItem>
-                            ))}
-                         </Select>
-                </FormControl>
+            {/* ─── Controls ───────────────────────────── */}
+            <div className="flex sm:flex-row flex-col gap-2.5 items-stretch sm:items-center">
+                {/* Category Select */}
+                <div className="relative">
+                    <select
+                        value={category}
+                        onChange={handleCategoryChange}
+                        className="appearance-none w-full sm:w-auto min-w-[140px] border border-slate-200 rounded-xl
+                            py-2.5 pl-4 pr-9 text-sm text-slate-700 font-medium
+                            bg-white cursor-pointer
+                            focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300
+                            transition-all duration-200"
+                    >
+                        <option value="all">All Categories</option>
+                        {categories.map((item) => (
+                            <option key={item.categoryId} value={item.categoryName}>
+                                {item.categoryName}
+                            </option>
+                        ))}
+                    </select>
+                    <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
 
-                {/* SORT BUTTON & CLEAR FILTER */}
-                <Tooltip title="Sorted by price: asc">
-                    <Button variant="contained" 
-                        onClick={toggleSortOrder}
-                        color="primary" 
-                        className="flex items-center gap-2 h-10">
-                        Sort By
-                        {sortOrder === "asc" ? (
-                            <FiArrowUp size={20} />
-                        ) : (
-                            <FiArrowDown size={20} />
-                        )}
-                        
-                    </Button>
-                </Tooltip>
-                <button 
-                className="flex items-center gap-2 bg-rose-900 text-white px-3 py-2 rounded-md transition duration-300 ease-in shadow-md focus:outline-none"
-                onClick={handleClearFilters}
+                {/* Sort */}
+                <button
+                    onClick={toggleSortOrder}
+                    title={`Sort by price: ${sortOrder === 'asc' ? 'Low → High' : 'High → Low'}`}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+                        border border-slate-200 bg-white text-sm font-medium text-slate-700
+                        transition-all duration-200
+                        hover:bg-slate-50 hover:border-slate-300
+                        focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 >
-                    <FiRefreshCw className="font-semibold" size={16}/>
-                    <span className="font-semibold">Clear Filter</span>
+                    Price
+                    {sortOrder === "asc" ? (
+                        <FiArrowUp className="text-indigo-500" size={16} />
+                    ) : (
+                        <FiArrowDown className="text-indigo-500" size={16} />
+                    )}
                 </button>
+
+                {/* Clear */}
+                {hasActiveFilters && (
+                    <button
+                        onClick={handleClearFilters}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl
+                            border border-red-200 bg-red-50 text-sm font-medium text-red-600
+                            transition-all duration-200
+                            hover:bg-red-100 hover:border-red-300
+                            focus:outline-none focus:ring-2 focus:ring-red-200"
+                    >
+                        <FiRefreshCw size={14} />
+                        Clear
+                    </button>
+                )}
             </div>
         </div>
     );
