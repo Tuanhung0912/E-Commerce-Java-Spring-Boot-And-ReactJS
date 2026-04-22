@@ -53,7 +53,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO placeOrder(String emailId, Long addressId, String paymentMethod, String pgName, String pgPaymentId, String pgStatus, String pgResponseMessage) {
+    public OrderDTO placeOrder(String emailId, Long addressId, String paymentMethod, String pgName, String pgPaymentId,
+            String pgStatus, String pgResponseMessage) {
         Cart cart = cartRepository.findCartByEmail(emailId);
         if (cart == null) {
             throw new ResourceNotFoundException("Cart", "email", emailId);
@@ -140,7 +141,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO updateOrder(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order","orderId",orderId));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "orderId", orderId));
         order.setOrderStatus(status);
         orderRepository.save(order);
         return modelMapper.map(order, OrderDTO.class);
@@ -170,6 +171,28 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         List<OrderDTO> orderDTOs = sellerOrders.stream()
+                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOs);
+        orderResponse.setPageNumber(pageOrders.getNumber());
+        orderResponse.setPageSize(pageOrders.getSize());
+        orderResponse.setTotalElements(pageOrders.getTotalElements());
+        orderResponse.setTotalPages(pageOrders.getTotalPages());
+        orderResponse.setLastPage(pageOrders.isLast());
+        return orderResponse;
+    }
+
+    @Override
+    public OrderResponse getUserOrders(String email, Integer pageNumber, Integer pageSize, String sortBy,
+            String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Order> pageOrders = orderRepository.findByEmail(email, pageDetails);
+        List<Order> orders = pageOrders.getContent();
+        List<OrderDTO> orderDTOs = orders.stream()
                 .map(order -> modelMapper.map(order, OrderDTO.class))
                 .toList();
         OrderResponse orderResponse = new OrderResponse();
