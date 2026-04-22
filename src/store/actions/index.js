@@ -155,7 +155,11 @@ export const registerNewUser
 
 export const logOutUser = (navigate) => (dispatch) => {
     dispatch({ type:"LOG_OUT" });
+    dispatch({ type:"CLEAR_CART" });
     localStorage.removeItem("auth");
+    localStorage.removeItem("cartItems");
+    localStorage.removeItem("CHECKOUT_ADDRESS");
+    localStorage.removeItem("client-secret");
     navigate("/login");
 };
 
