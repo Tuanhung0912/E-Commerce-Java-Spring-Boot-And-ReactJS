@@ -153,6 +153,18 @@ export const removeFromCart =  (data, toast) => async (dispatch, getState) => {
 }
 
 
+export const clearAllCart = (toast) => async (dispatch) => {
+    try {
+        await api.delete('/carts/clear');
+        dispatch({ type: "CLEAR_CART" });
+        localStorage.removeItem("cartItems");
+        toast.success("Cart cleared successfully");
+    } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message || "Failed to clear cart");
+    }
+}
+
 
 export const authenticateSignInUser 
     = (sendData, toast, reset, navigate, setLoader) => async (dispatch) => {
