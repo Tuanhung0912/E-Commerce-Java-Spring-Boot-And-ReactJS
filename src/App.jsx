@@ -21,6 +21,7 @@ import Sellers from './components/admin/sellers/Sellers'
 import Category from './components/admin/categories/Category'
 import Orders from './components/admin/orders/Orders'
 import Profile from './components/profile/Profile'
+import MyOrders from './components/profile/MyOrders'
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         
           <Route path='/' element={<PrivateRoute />}>
             <Route path='/profile' element={ <Profile />}/>
+            <Route path='/profile/orders' element={ <MyOrders />}/>
             <Route path='/checkout' element={ <Checkout />}/>
             <Route path='/order-confirm' element={ <PaymentConfirmation />}/>
           </Route>
