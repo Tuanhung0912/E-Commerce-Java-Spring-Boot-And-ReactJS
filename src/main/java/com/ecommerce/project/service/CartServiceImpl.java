@@ -309,4 +309,19 @@ public class CartServiceImpl implements CartService {
         return "Cart created/updated with the new items successfully";
     }
 
+    @Override
+    @Transactional
+    public String clearCart() {
+        String emailId = authUtil.loggedInEmail();
+        Cart cart = cartRepository.findCartByEmail(emailId);
+        if (cart == null) {
+            throw new ResourceNotFoundException("Cart", "email", emailId);
+        }
+        Long cartId = cart.getCartId();
+        cartItemRepository.deleteAllByCartId(cartId);
+        cart.setTotalPrice(0.0);
+        cartRepository.save(cart);
+        return "Cart cleared successfully";
+    }
+
 }

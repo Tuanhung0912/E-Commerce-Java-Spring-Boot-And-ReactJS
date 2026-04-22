@@ -31,7 +31,7 @@ public class CartController {
     @Tag(name = "Cart APIs", description = "APIs for managing carts")
     @Operation(summary = "Create Or Update Cart", description = "API to Create/Update Cart cart")
     @PostMapping("/cart/create")
-    public ResponseEntity<String> createOrUpdateCart(@RequestBody List<CartItemDTO> cartItems){
+    public ResponseEntity<String> createOrUpdateCart(@RequestBody List<CartItemDTO> cartItems) {
         String response = cartService.createOrUpdateCartWithItems(cartItems);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -40,7 +40,7 @@ public class CartController {
     @Operation(summary = "Add products to cart", description = "API to add products to cart")
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart(@PathVariable Long productId,
-                                                    @PathVariable Integer quantity){
+            @PathVariable Integer quantity) {
         CartDTO cartDTO = cartService.addProductToCart(productId, quantity);
         return new ResponseEntity<CartDTO>(cartDTO, HttpStatus.CREATED);
     }
@@ -56,7 +56,7 @@ public class CartController {
     @Tag(name = "Cart APIs", description = "APIs for managing carts")
     @Operation(summary = "Get cart by Id", description = "API to get cart by Id")
     @GetMapping("/carts/users/cart")
-    public ResponseEntity<CartDTO> getCartById(){
+    public ResponseEntity<CartDTO> getCartById() {
         String emailId = authUtil.loggedInEmail();
         Cart cart = cartRepository.findCartByEmail(emailId);
         Long cartId = cart.getCartId();
@@ -68,7 +68,7 @@ public class CartController {
     @Operation(summary = "Update product quantity from cart", description = "API to update product quantity from cart")
     @PutMapping("/cart/products/{productId}/quantity/{operation}")
     public ResponseEntity<CartDTO> updateCartProduct(@PathVariable Long productId,
-                                                     @PathVariable String operation) {
+            @PathVariable String operation) {
 
         CartDTO cartDTO = cartService.updateProductQuantityInCart(productId,
                 operation.equalsIgnoreCase("delete") ? -1 : 1);
@@ -80,9 +80,17 @@ public class CartController {
     @Operation(summary = "Delete product from cart", description = "API to Delete product from cart")
     @DeleteMapping("/carts/{cartId}/product/{productId}")
     public ResponseEntity<String> deleteProductFromCart(@PathVariable Long cartId,
-                                                        @PathVariable Long productId) {
+            @PathVariable Long productId) {
         String status = cartService.deleteProductFromCart(cartId, productId);
 
         return new ResponseEntity<String>(status, HttpStatus.OK);
+    }
+
+    @Tag(name = "Cart APIs", description = "APIs for managing carts")
+    @Operation(summary = "Clear all items from cart", description = "API to remove all items from user's cart")
+    @DeleteMapping("/carts/clear")
+    public ResponseEntity<String> clearCart() {
+        String status = cartService.clearCart();
+        return new ResponseEntity<>(status, HttpStatus.OK);
     }
 }
