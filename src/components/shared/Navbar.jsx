@@ -4,11 +4,13 @@ import { FaShoppingCart, FaSignInAlt, FaStore } from "react-icons/fa";
 import { IoIosMenu } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
 import { useSelector } from "react-redux";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import UserMenu from "../UserMenu";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
     const path = useLocation().pathname;
+    const navigate = useNavigate();
     const [navbarOpen, setNavbarOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const { cart } = useSelector((state) => state.carts);
@@ -71,24 +73,51 @@ const Navbar = () => {
                 {/* ─── Right: Cart + Auth (OUTSIDE nav links) ── */}
                 <div className="flex items-center gap-3 shrink-0">
                     {/* Cart */}
-                    <Link
-                        to="/cart"
-                        className={`relative px-3 py-2 rounded-lg transition-all duration-200 flex items-center
-                            ${path === "/cart"
-                                ? "text-white bg-white/15"
-                                : "text-slate-300 hover:text-white hover:bg-white/10"
-                            }`}
-                    >
-                        <Badge
-                            showZero
-                            badgeContent={cart?.length || 0}
-                            color="primary"
-                            overlap="circular"
-                            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    {user && user.id ? (
+                        <Link
+                            to="/cart"
+                            className={`relative px-3 py-2 rounded-lg transition-all duration-200 flex items-center
+                                ${path === "/cart"
+                                    ? "text-white bg-white/15"
+                                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                                }`}
+                        >
+                            <Badge
+                                showZero
+                                badgeContent={cart?.length || 0}
+                                color="primary"
+                                overlap="circular"
+                                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            >
+                                <FaShoppingCart size={20} />
+                            </Badge>
+                        </Link>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                toast((t) => (
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100">
+                                            <FaShoppingCart className="text-indigo-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">Login Required</p>
+                                            <p className="text-xs text-slate-500 mt-0.5">Sign in to access your cart</p>
+                                        </div>
+                                        <button
+                                            onClick={() => { toast.dismiss(t.id); navigate("/login"); }}
+                                            className="ml-2 shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors"
+                                        >
+                                            Login
+                                        </button>
+                                    </div>
+                                ), { duration: 4000, style: { padding: '12px 16px', borderRadius: '16px', maxWidth: '420px' } });
+                            }}
+                            className="relative px-3 py-2 rounded-lg transition-all duration-200 flex items-center text-slate-300 hover:text-white hover:bg-white/10"
                         >
                             <FaShoppingCart size={20} />
-                        </Badge>
-                    </Link>
+                        </button>
+                    )}
 
                     {/* User Menu or Login — completely separate */}
                     {(user && user.id) ? (

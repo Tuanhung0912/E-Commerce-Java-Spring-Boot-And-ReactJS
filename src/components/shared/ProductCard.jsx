@@ -2,9 +2,10 @@ import { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import ProductViewModal from "./ProductViewModal";
 import truncateText from "../utils/truncateText";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../store/actions";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({
         productId,
@@ -22,6 +23,8 @@ const ProductCard = ({
     const [selectedViewProduct, setSelectedViewProduct] = useState("");
     const isAvailable = quantity && Number(quantity) > 0;
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { user } = useSelector((state) => state.auth);
 
     const handleProductView = (product) => {
         if (!about) {
@@ -31,6 +34,26 @@ const ProductCard = ({
     };
 
     const addToCartHandler = (cartItems) => {
+        if (!user) {
+            toast((t) => (
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100">
+                        <FaShoppingCart className="text-indigo-600" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-slate-800">Login Required</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Please sign in to add items to your cart</p>
+                    </div>
+                    <button
+                        onClick={() => { toast.dismiss(t.id); navigate("/login"); }}
+                        className="ml-2 shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors"
+                    >
+                        Login
+                    </button>
+                </div>
+            ), { duration: 4000, style: { padding: '12px 16px', borderRadius: '16px', maxWidth: '420px' } });
+            return;
+        }
         dispatch(addToCart(cartItems, 1, toast));
     };
 
