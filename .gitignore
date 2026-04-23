@@ -63,3 +63,6 @@ out/
 ._*
 Thumbs.db
 desktop.ini
+
+# Markdown File
+RULE_BE.md
