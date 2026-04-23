@@ -479,6 +479,7 @@ const AdminProducts = () => {
         open={openProductViewModal}
         setOpen={setOpenProductViewModal}
         product={selectedProduct}
+        isAvailable={selectedProduct?.quantity && Number(selectedProduct.quantity) > 0}
       />
     </div>
   )

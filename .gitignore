@@ -84,3 +84,7 @@ coverage/
 # ========================
 .eslintcache
 *.tgz
+
+
+# Markdown File
+RULE_FE.md
