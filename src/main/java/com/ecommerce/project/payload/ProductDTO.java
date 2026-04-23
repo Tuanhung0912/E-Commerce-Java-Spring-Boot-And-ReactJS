@@ -17,5 +17,7 @@ public class ProductDTO {
     private Double discount;
     private Double specialPrice;
     private Boolean isDeleted;
+    private Double averageRating;
+    private Long reviewCount;
 
 }

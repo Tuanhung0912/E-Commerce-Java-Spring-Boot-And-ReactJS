@@ -1,6 +1,5 @@
 package com.ecommerce.project.service;
 
-
 import com.ecommerce.project.exceptions.APIException;
 import com.ecommerce.project.exceptions.ResourceNotFoundException;
 import com.ecommerce.project.model.Cart;
@@ -13,6 +12,7 @@ import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.repositories.CartRepository;
 import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
+import com.ecommerce.project.repositories.ReviewRepository;
 import com.ecommerce.project.util.AuthUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +53,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     AuthUtil authUtil;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     @Value("${project.image}")
     private String path;
 
@@ -62,8 +65,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Category", "categoryId", categoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
 
         boolean isProductNotPresent = true;
 
@@ -81,8 +83,7 @@ public class ProductServiceImpl implements ProductService {
             product.setImage("default.png");
             product.setCategory(category);
             product.setUser(authUtil.loggedInUser());
-            double specialPrice =
-                    product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
+            double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
             product.setSpecialPrice(specialPrice);
             Product savedProduct = productRepository.save(product);
             return modelMapper.map(savedProduct, ProductDTO.class);
@@ -93,27 +94,28 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, String keyword, String category) {
+    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder,
+            String keyword, String category) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
-        //Page<Product> pageProducts = productRepository.findAll(pageDetails);
-        //Specification<Product> spec = Specification.where((Specification<Product>) null);
+        // Page<Product> pageProducts = productRepository.findAll(pageDetails);
+        // Specification<Product> spec = Specification.where((Specification<Product>)
+        // null);
         Specification<Product> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
         // Filter out soft-deleted products for public view
-        spec = spec.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("isDeleted"), false));
+        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isDeleted"), false));
         if (keyword != null && !keyword.isEmpty()) {
-            spec = spec.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
+            spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+                    .like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
         }
 
         if (category != null && !category.isEmpty()) {
-            spec = spec.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.like(root.get("category").get("categoryName"), category));
+            spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+                    .like(root.get("category").get("categoryName"), category));
         }
 
         Page<Product> pageProducts = productRepository.findAll(spec, pageDetails);
@@ -124,6 +126,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(product -> {
                     ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
                     productDTO.setImage(constructImageUrl(product.getImage()));
+                    enrichWithReviewData(productDTO, product.getProductId());
                     return productDTO;
                 })
                 .toList();
@@ -142,18 +145,26 @@ public class ProductServiceImpl implements ProductService {
         return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
     }
 
+    private void enrichWithReviewData(ProductDTO productDTO, Long productId) {
+        Double avg = reviewRepository.findAverageRatingByProductId(productId);
+        Long count = reviewRepository.countByProductProductId(productId);
+        productDTO.setAverageRating(avg != null ? avg : 0.0);
+        productDTO.setReviewCount(count);
+    }
+
     @Override
-    public ProductResponse searchByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public ProductResponse searchByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy,
+            String sortOrder) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Category", "categoryId", categoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
 
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
-        Page<Product> pageProducts = productRepository.findByCategoryAndIsDeletedFalseOrderByPriceAsc(category, pageDetails);
+        Page<Product> pageProducts = productRepository.findByCategoryAndIsDeletedFalseOrderByPriceAsc(category,
+                pageDetails);
 
         List<Product> products = pageProducts.getContent();
 
@@ -176,13 +187,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse searchProductByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public ProductResponse searchProductByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy,
+            String sortOrder) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
-        Page<Product> pageProducts = productRepository.findByProductNameLikeIgnoreCaseAndIsDeletedFalse("%" + keyword + "%", pageDetails);
+        Page<Product> pageProducts = productRepository
+                .findByProductNameLikeIgnoreCaseAndIsDeletedFalse("%" + keyword + "%", pageDetails);
 
         List<Product> products = pageProducts.getContent();
         List<ProductDTO> productDTOS = products.stream()
@@ -214,8 +227,7 @@ public class ProductServiceImpl implements ProductService {
         productFromDb.setQuantity(product.getQuantity());
         productFromDb.setDiscount(product.getDiscount());
         productFromDb.setPrice(product.getPrice());
-        double specialPrice =
-                product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
+        double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
         product.setSpecialPrice(specialPrice);
         Product savedProduct = productRepository.save(productFromDb);
 
@@ -266,7 +278,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getAllProductsForAdmin(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public ProductResponse getAllProductsForAdmin(Integer pageNumber, Integer pageSize, String sortBy,
+            String sortOrder) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
@@ -280,6 +293,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(product -> {
                     ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
                     productDTO.setImage(constructImageUrl(product.getImage()));
+                    enrichWithReviewData(productDTO, product.getProductId());
                     return productDTO;
                 })
                 .toList();
@@ -295,7 +309,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getAllProductsForSeller(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public ProductResponse getAllProductsForSeller(Integer pageNumber, Integer pageSize, String sortBy,
+            String sortOrder) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
@@ -311,6 +326,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(product -> {
                     ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
                     productDTO.setImage(constructImageUrl(product.getImage()));
+                    enrichWithReviewData(productDTO, product.getProductId());
                     return productDTO;
                 })
                 .toList();
