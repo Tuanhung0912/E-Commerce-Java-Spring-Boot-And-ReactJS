@@ -9,7 +9,8 @@ import {
     FaShoppingCart, FaHeart, FaRegHeart,
     FaArrowLeft, FaMinus, FaPlus,
     FaBoxOpen, FaChevronLeft, FaChevronRight,
-    FaUserCircle, FaShoppingBag, FaSearchPlus
+    FaUserCircle, FaShoppingBag, FaSearchPlus,
+    FaTimes
 } from "react-icons/fa";
 import Loader from "../shared/Loader";
 
@@ -40,6 +41,7 @@ const ProductDetails = () => {
     const [isZooming, setIsZooming] = useState(false);
     const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
     const [maxThumbs, setMaxThumbs] = useState(4);
+    const [showLightbox, setShowLightbox] = useState(false);
     const galleryRef = useRef(null);
 
     // Reviews
@@ -298,19 +300,23 @@ const ProductDetails = () => {
                             <>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center
+                                    onMouseEnter={() => setIsZooming(false)}
+                                    onMouseLeave={() => setIsZooming(true)}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center
                                         rounded-full bg-white/80 backdrop-blur-sm text-slate-700 shadow-lg
                                         hover:bg-white hover:scale-110 transition-all duration-200
-                                        opacity-0 group-hover:opacity-100"
+                                        opacity-0 group-hover:opacity-100 cursor-pointer"
                                 >
                                     <FaChevronLeft className="text-sm" />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center
+                                    onMouseEnter={() => setIsZooming(false)}
+                                    onMouseLeave={() => setIsZooming(true)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center
                                         rounded-full bg-white/80 backdrop-blur-sm text-slate-700 shadow-lg
                                         hover:bg-white hover:scale-110 transition-all duration-200
-                                        opacity-0 group-hover:opacity-100"
+                                        opacity-0 group-hover:opacity-100 cursor-pointer"
                                 >
                                     <FaChevronRight className="text-sm" />
                                 </button>
@@ -338,14 +344,83 @@ const ProductDetails = () => {
                             {/* Overflow indicator */}
                             {overflowCount > 0 && (
                                 <button
-                                    onClick={() => setActiveIdx(MAX_THUMBS)}
+                                    onClick={() => setShowLightbox(true)}
                                     className="flex w-16 h-16 sm:w-20 sm:h-20 items-center justify-center rounded-xl
                                         border-2 border-slate-200 bg-slate-100 shrink-0
-                                        text-sm font-semibold text-slate-500 hover:border-slate-300 hover:bg-slate-50 transition-all"
+                                        text-sm font-semibold text-slate-500 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 transition-all"
                                 >
                                     +{overflowCount}
                                 </button>
                             )}
+                        </div>
+                    )}
+
+                    {/* ─── Lightbox Overlay ─────────────── */}
+                    {showLightbox && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+                            onClick={() => setShowLightbox(false)}>
+                            <div className="relative w-full max-w-4xl mx-4 flex flex-col items-center"
+                                onClick={(e) => e.stopPropagation()}>
+
+                                {/* Close button */}
+                                <button
+                                    onClick={() => setShowLightbox(false)}
+                                    className="absolute -top-2 -right-2 z-10 flex h-10 w-10 items-center justify-center
+                                        rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
+                                >
+                                    <FaTimes className="text-lg" />
+                                </button>
+
+                                {/* Counter */}
+                                <div className="mb-3 text-sm font-medium text-white/70">
+                                    {activeIdx + 1} / {totalImages}
+                                </div>
+
+                                {/* Main large image */}
+                                <div className="relative w-full max-h-[65vh] flex items-center justify-center">
+                                    <img
+                                        src={allImages[activeIdx]}
+                                        alt={`Photo ${activeIdx + 1}`}
+                                        className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-2xl transition-all duration-300"
+                                    />
+
+                                    {/* Prev / Next */}
+                                    <button
+                                        onClick={() => setActiveIdx((i) => (i === 0 ? totalImages - 1 : i - 1))}
+                                        className="absolute left-2 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center
+                                            rounded-full bg-white/15 text-white hover:bg-white/30 transition-all"
+                                    >
+                                        <FaChevronLeft />
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveIdx((i) => (i === totalImages - 1 ? 0 : i + 1))}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center
+                                            rounded-full bg-white/15 text-white hover:bg-white/30 transition-all"
+                                    >
+                                        <FaChevronRight />
+                                    </button>
+                                </div>
+
+                                {/* Filmstrip */}
+                                <div className="mt-4 w-full overflow-x-auto scrollbar-hide">
+                                    <div className="flex items-center justify-center gap-2 px-2 pb-2">
+                                        {allImages.map((src, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setActiveIdx(i)}
+                                                className={`relative w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-lg overflow-hidden shrink-0
+                                                    border-2 transition-all duration-200
+                                                    ${activeIdx === i
+                                                        ? 'border-white ring-2 ring-white/40 scale-110 opacity-100'
+                                                        : 'border-transparent opacity-50 hover:opacity-80 hover:border-white/30'
+                                                    }`}
+                                            >
+                                                <img src={src} alt={`Thumb ${i + 1}`} className="w-full h-full object-cover" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
