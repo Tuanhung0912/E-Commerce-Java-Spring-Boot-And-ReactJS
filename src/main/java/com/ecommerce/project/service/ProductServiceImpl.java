@@ -5,12 +5,14 @@ import com.ecommerce.project.exceptions.ResourceNotFoundException;
 import com.ecommerce.project.model.Cart;
 import com.ecommerce.project.model.Category;
 import com.ecommerce.project.model.Product;
+import com.ecommerce.project.model.ProductImage;
 import com.ecommerce.project.model.User;
 import com.ecommerce.project.payload.CartDTO;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.repositories.CartRepository;
 import com.ecommerce.project.repositories.CategoryRepository;
+import com.ecommerce.project.repositories.ProductImageRepository;
 import com.ecommerce.project.repositories.ProductRepository;
 import com.ecommerce.project.repositories.ReviewRepository;
 import com.ecommerce.project.util.AuthUtil;
@@ -55,6 +57,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ReviewRepository reviewRepository;
+
+    @Autowired
+    private ProductImageRepository productImageRepository;
 
     @Value("${project.image}")
     private String path;
@@ -127,6 +132,7 @@ public class ProductServiceImpl implements ProductService {
                     ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
                     productDTO.setImage(constructImageUrl(product.getImage()));
                     enrichWithReviewData(productDTO, product.getProductId());
+                    enrichWithSecondaryImages(productDTO, product.getProductId());
                     return productDTO;
                 })
                 .toList();
@@ -150,6 +156,14 @@ public class ProductServiceImpl implements ProductService {
         Long count = reviewRepository.countByProductProductId(productId);
         productDTO.setAverageRating(avg != null ? avg : 0.0);
         productDTO.setReviewCount(count);
+    }
+
+    private void enrichWithSecondaryImages(ProductDTO productDTO, Long productId) {
+        List<ProductImage> productImages = productImageRepository.findByProductProductId(productId);
+        List<String> imageUrls = productImages.stream()
+                .map(img -> constructImageUrl(img.getImageName()))
+                .toList();
+        productDTO.setImages(imageUrls);
     }
 
     @Override
@@ -294,6 +308,7 @@ public class ProductServiceImpl implements ProductService {
                     ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
                     productDTO.setImage(constructImageUrl(product.getImage()));
                     enrichWithReviewData(productDTO, product.getProductId());
+                    enrichWithSecondaryImages(productDTO, product.getProductId());
                     return productDTO;
                 })
                 .toList();
@@ -327,6 +342,7 @@ public class ProductServiceImpl implements ProductService {
                     ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
                     productDTO.setImage(constructImageUrl(product.getImage()));
                     enrichWithReviewData(productDTO, product.getProductId());
+                    enrichWithSecondaryImages(productDTO, product.getProductId());
                     return productDTO;
                 })
                 .toList();

@@ -19,7 +19,6 @@ public class WishlistController {
     @Autowired
     private WishlistService wishlistService;
 
-    @Tag(name = "Wishlist APIs", description = "APIs for managing wishlist")
     @Operation(summary = "Add to wishlist", description = "Add a product to the logged-in user's wishlist")
     @PostMapping("/wishlist/products/{productId}")
     public ResponseEntity<WishlistItemDTO> addToWishlist(@PathVariable Long productId) {
@@ -27,7 +26,6 @@ public class WishlistController {
         return new ResponseEntity<>(savedItem, HttpStatus.CREATED);
     }
 
-    @Tag(name = "Wishlist APIs", description = "APIs for managing wishlist")
     @Operation(summary = "Remove from wishlist", description = "Remove a product from the logged-in user's wishlist")
     @DeleteMapping("/wishlist/{wishlistItemId}")
     public ResponseEntity<WishlistItemDTO> removeFromWishlist(@PathVariable Long wishlistItemId) {
@@ -35,7 +33,6 @@ public class WishlistController {
         return new ResponseEntity<>(removedItem, HttpStatus.OK);
     }
 
-    @Tag(name = "Wishlist APIs", description = "APIs for managing wishlist")
     @Operation(summary = "Get my wishlist", description = "Get the logged-in user's wishlist (paginated)")
     @GetMapping("/wishlist")
     public ResponseEntity<WishlistResponse> getMyWishlist(
