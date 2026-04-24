@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../../api/api";
@@ -9,7 +9,7 @@ import {
     FaShoppingCart, FaHeart, FaRegHeart,
     FaArrowLeft, FaMinus, FaPlus,
     FaBoxOpen, FaChevronLeft, FaChevronRight,
-    FaUserCircle, FaShoppingBag
+    FaUserCircle, FaShoppingBag, FaSearchPlus
 } from "react-icons/fa";
 import Loader from "../shared/Loader";
 
@@ -34,6 +34,13 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [qty, setQty] = useState(1);
+
+    // Gallery state
+    const [activeIdx, setActiveIdx] = useState(0);
+    const [isZooming, setIsZooming] = useState(false);
+    const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+    const [maxThumbs, setMaxThumbs] = useState(4);
+    const galleryRef = useRef(null);
 
     // Reviews
     const [reviews, setReviews] = useState([]);
@@ -163,9 +170,52 @@ const ProductDetails = () => {
         return new Date(dateStr).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
     };
 
-    const imgSrc = product?.image?.startsWith('http')
-        ? product.image
-        : `${import.meta.env.VITE_BACK_END_URL}/images/${product?.image}`;
+    const resolveImg = (src) =>
+        src?.startsWith('http') ? src : `${import.meta.env.VITE_BACK_END_URL}/images/${src}`;
+
+    const imgSrc = resolveImg(product?.image);
+
+    // Build gallery: main image + secondary images
+    const secondaryImages = (product?.images || []).map(resolveImg);
+    const allImages = [imgSrc, ...secondaryImages];
+    const totalImages = allImages.length;
+    const hasGallery = totalImages > 1;
+
+    const handlePrev = () => setActiveIdx((i) => (i === 0 ? totalImages - 1 : i - 1));
+    const handleNext = () => setActiveIdx((i) => (i === totalImages - 1 ? 0 : i + 1));
+
+    const handleZoomMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setZoomPos({ x, y });
+    };
+
+    // Calculate how many thumbnails fit the container width
+    const THUMB_SIZE = 80; // px (w-20 = 5rem = 80px)
+    const THUMB_GAP = 8;   // px (gap-2 = 0.5rem = 8px)
+
+    const calcMaxThumbs = useCallback(() => {
+        if (!galleryRef.current) return;
+        const containerWidth = galleryRef.current.offsetWidth;
+        const fitAll = Math.floor((containerWidth + THUMB_GAP) / (THUMB_SIZE + THUMB_GAP));
+        if (totalImages <= fitAll) {
+            // All images fit — no +N needed
+            setMaxThumbs(fitAll);
+        } else {
+            // Reserve 1 slot for the +N button
+            setMaxThumbs(Math.max(1, fitAll - 1));
+        }
+    }, [totalImages]);
+
+    useEffect(() => {
+        calcMaxThumbs();
+        window.addEventListener('resize', calcMaxThumbs);
+        return () => window.removeEventListener('resize', calcMaxThumbs);
+    }, [calcMaxThumbs]);
+
+    const visibleThumbs = allImages.slice(0, maxThumbs);
+    const overflowCount = totalImages - maxThumbs;
 
     if (loading) {
         return <div className="flex justify-center py-32"><Loader /></div>;
@@ -193,18 +243,111 @@ const ProductDetails = () => {
 
             {/* ─── Main Product Section ────────────────── */}
             <div className="grid lg:grid-cols-2 gap-10">
-                {/* Image */}
-                <div className="relative rounded-2xl overflow-hidden bg-slate-50 border border-slate-200">
-                    {product.discount > 0 && (
-                        <span className="absolute top-4 left-4 z-10 inline-flex items-center rounded-full bg-rose-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-rose-200">
-                            -{product.discount}%
-                        </span>
+                {/* Image Gallery */}
+                <div ref={galleryRef} className="space-y-3">
+                    {/* Main display */}
+                    <div
+                        className="relative rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 group cursor-crosshair"
+                        onMouseEnter={() => setIsZooming(true)}
+                        onMouseLeave={() => setIsZooming(false)}
+                        onMouseMove={handleZoomMove}
+                    >
+                        {product.discount > 0 && (
+                            <span className="absolute top-4 left-4 z-10 inline-flex items-center rounded-full bg-rose-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-rose-200">
+                                -{product.discount}%
+                            </span>
+                        )}
+
+                        {/* Image counter badge */}
+                        {hasGallery && (
+                            <span className="absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/50 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-white">
+                                {activeIdx + 1} / {totalImages}
+                            </span>
+                        )}
+
+                        {/* Image with transition */}
+                        <div className="relative aspect-square overflow-hidden">
+                            <img
+                                key={activeIdx}
+                                src={allImages[activeIdx]}
+                                alt={`${product.productName} - ${activeIdx + 1}`}
+                                className="w-full h-full object-cover transition-opacity duration-300 ease-in-out"
+                                style={
+                                    isZooming
+                                        ? {
+                                            transform: 'scale(2)',
+                                            transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                                            transition: 'transform 0.1s ease-out',
+                                          }
+                                        : { transform: 'scale(1)', transition: 'transform 0.3s ease-out' }
+                                }
+                            />
+                        </div>
+
+                        {/* Zoom hint */}
+                        {!isZooming && (
+                            <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-sm px-3 py-1.5 text-xs text-white/80
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                <FaSearchPlus className="text-xs" />
+                                Hover to zoom
+                            </div>
+                        )}
+
+                        {/* Navigation arrows */}
+                        {hasGallery && (
+                            <>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center
+                                        rounded-full bg-white/80 backdrop-blur-sm text-slate-700 shadow-lg
+                                        hover:bg-white hover:scale-110 transition-all duration-200
+                                        opacity-0 group-hover:opacity-100"
+                                >
+                                    <FaChevronLeft className="text-sm" />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center
+                                        rounded-full bg-white/80 backdrop-blur-sm text-slate-700 shadow-lg
+                                        hover:bg-white hover:scale-110 transition-all duration-200
+                                        opacity-0 group-hover:opacity-100"
+                                >
+                                    <FaChevronRight className="text-sm" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Thumbnail strip */}
+                    {hasGallery && (
+                        <div className="flex items-center gap-2">
+                            {visibleThumbs.map((src, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setActiveIdx(i)}
+                                    className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 shrink-0
+                                        ${activeIdx === i
+                                            ? 'border-indigo-500 ring-2 ring-indigo-200 scale-105'
+                                            : 'border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
+                                        }`}
+                                >
+                                    <img src={src} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+
+                            {/* Overflow indicator */}
+                            {overflowCount > 0 && (
+                                <button
+                                    onClick={() => setActiveIdx(MAX_THUMBS)}
+                                    className="flex w-16 h-16 sm:w-20 sm:h-20 items-center justify-center rounded-xl
+                                        border-2 border-slate-200 bg-slate-100 shrink-0
+                                        text-sm font-semibold text-slate-500 hover:border-slate-300 hover:bg-slate-50 transition-all"
+                                >
+                                    +{overflowCount}
+                                </button>
+                            )}
+                        </div>
                     )}
-                    <img
-                        src={imgSrc}
-                        alt={product.productName}
-                        className="w-full aspect-square object-cover"
-                    />
                 </div>
 
                 {/* Info */}
