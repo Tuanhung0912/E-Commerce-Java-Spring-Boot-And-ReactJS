@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { FaShoppingCart, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaShoppingCart, FaHeart, FaRegHeart, FaEye } from "react-icons/fa";
 import ProductViewModal from "./ProductViewModal";
 import truncateText from "../utils/truncateText";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, addToWishlist, removeFromWishlist, fetchWishlist } from "../../store/actions";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const ProductCard = ({
         productId,
@@ -141,25 +141,25 @@ const ProductCard = ({
             )}
 
             {/* Image */}
-            <div
-                onClick={() => handleProductView(productData)}
-                className="w-full overflow-hidden aspect-[3/2] bg-slate-50 cursor-pointer"
+            <Link
+                to={about ? '#' : `/products/${productId}`}
+                className="block w-full overflow-hidden aspect-[3/2] bg-slate-50 cursor-pointer"
             >
                 <img
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     src={image}
                     alt={productName}
                 />
-            </div>
+            </Link>
 
             {/* Content */}
             <div className="p-5">
-                <h2
-                    onClick={() => handleProductView(productData)}
-                    className="text-base font-semibold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors duration-200 leading-tight"
+                <Link
+                    to={about ? '#' : `/products/${productId}`}
+                    className="block text-base font-semibold text-slate-800 hover:text-indigo-600 transition-colors duration-200 leading-tight"
                 >
                     {truncateText(productName, 50)}
-                </h2>
+                </Link>
 
                 <div className="min-h-[56px] mt-2">
                     <p className="text-slate-500 text-sm leading-relaxed">
@@ -187,27 +187,39 @@ const ProductCard = ({
                             )}
                         </div>
 
-                        {/* Cart button */}
-                        <button
-                            disabled={!isAvailable || btnLoader}
-                            onClick={() => addToCartHandler({
-                                image,
-                                productName,
-                                description,
-                                specialPrice,
-                                price,
-                                productId,
-                                quantity,
-                            })}
-                            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300
-                                ${isAvailable
-                                    ? "bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 hover:shadow-indigo-300 hover:scale-[1.03]"
-                                    : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                }`}
-                        >
-                            <FaShoppingCart className="text-sm" />
-                            {isAvailable ? "Add to Cart" : "Stock Out"}
-                        </button>
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2">
+                            <Link
+                                to={`/products/${productId}`}
+                                className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold
+                                    border border-slate-200 text-slate-600
+                                    hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50
+                                    transition-all duration-300"
+                            >
+                                <FaEye className="text-xs" />
+                                Details
+                            </Link>
+                            <button
+                                disabled={!isAvailable || btnLoader}
+                                onClick={() => addToCartHandler({
+                                    image,
+                                    productName,
+                                    description,
+                                    specialPrice,
+                                    price,
+                                    productId,
+                                    quantity,
+                                })}
+                                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300
+                                    ${isAvailable
+                                        ? "bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 hover:shadow-indigo-300 hover:scale-[1.03]"
+                                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                    }`}
+                            >
+                                <FaShoppingCart className="text-sm" />
+                                {isAvailable ? "Cart" : "Stock Out"}
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
