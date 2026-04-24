@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { MdAddShoppingCart, MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../shared/Loader';
-import { FaBoxOpen, FaEdit, FaTrashAlt, FaImage, FaEye } from 'react-icons/fa';
+import { FaBoxOpen, FaEdit, FaTrashAlt, FaImage, FaEye, FaImages } from 'react-icons/fa';
 import { useDashboardProductFilter } from '../../hooks/useProductFilter';
 import Modal from '../../shared/Modal';
 import AddProductForm from './AddProductForm';
@@ -11,6 +11,7 @@ import { deleteProduct } from '../../../store/actions';
 import toast from 'react-hot-toast';
 import ImageUploadForm from './ImageUploadForm';
 import ProductViewModal from '../../shared/ProductViewModal';
+import GalleryImageModal from './GalleryImageModal';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 const AdminProducts = () => {
@@ -28,6 +29,7 @@ const AdminProducts = () => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openProductViewModal, setOpenProductViewModal] = useState(false);
   const [openImageUploadModal, setOpenImageUploadModal] = useState(false);
+  const [openGalleryModal, setOpenGalleryModal] = useState(false);
 
   const [loader, setLoader] = useState(false);
 
@@ -59,6 +61,11 @@ const AdminProducts = () => {
   const handleProductView = (product) => {
     setSelectedProduct(product);
     setOpenProductViewModal(true);
+  };
+
+  const handleGallery = (product) => {
+    setSelectedProduct(product);
+    setOpenGalleryModal(true);
   };
 
   const handlePageChange = (newPage) => {
@@ -259,6 +266,17 @@ const AdminProducts = () => {
                                 <FaImage className="text-sm" />
                               </button>
                               <button
+                                onClick={() => handleGallery({
+                                  id: item.productId,
+                                  productName: item.productName,
+                                })}
+                                title="Gallery Images"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-violet-200 bg-violet-50 text-violet-600 
+                                  transition-all hover:bg-violet-100 hover:border-violet-300"
+                              >
+                                <FaImages className="text-sm" />
+                              </button>
+                              <button
                                 onClick={() => handleEdit({
                                   id: item.productId,
                                   productName: item.productName,
@@ -370,6 +388,14 @@ const AdminProducts = () => {
                             <FaImage className="text-xs" />
                           </button>
                           <button
+                            onClick={() => handleGallery({
+                              id: item.productId, productName: item.productName,
+                            })}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-violet-200 bg-violet-50 text-violet-500 hover:bg-violet-100"
+                          >
+                            <FaImages className="text-xs" />
+                          </button>
+                          <button
                             onClick={() => handleEdit({
                               id: item.productId, productName: item.productName,
                               description: item.description, price: item.price,
@@ -464,6 +490,16 @@ const AdminProducts = () => {
         title="Add Product Image">
         <ImageUploadForm
           setOpen={setOpenImageUploadModal}
+          product={selectedProduct}
+        />
+      </Modal>
+
+      <Modal
+        open={openGalleryModal}
+        setOpen={setOpenGalleryModal}
+        title={`Gallery — ${selectedProduct?.productName || 'Product'}`}>
+        <GalleryImageModal
+          setOpen={setOpenGalleryModal}
           product={selectedProduct}
         />
       </Modal>
