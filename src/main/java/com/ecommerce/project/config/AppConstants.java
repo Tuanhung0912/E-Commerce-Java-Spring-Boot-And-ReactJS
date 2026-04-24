@@ -9,5 +9,6 @@ public class AppConstants {
     public static final String SORT_ORDERS_BY = "totalAmount";
     public static final String SORT_USERS_BY = "userId";
     public static final String SORT_REVIEWS_BY = "createdAt";
+    public static final String SORT_WISHLIST_BY = "createdAt";
 
 }
