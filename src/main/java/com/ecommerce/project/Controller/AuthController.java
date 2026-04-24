@@ -70,6 +70,8 @@ public class AuthController {
                 .body(new MessageResponse("You've been signed out!"));
     }
 
+    @Tag(name = "Authentication APIs", description = "APIs for managing authenticate")
+    @Operation(summary = "Get Seller Order", description = "API to get Seller Order")
     @GetMapping("/sellers")
     public ResponseEntity<?> getAllSellers(
             @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber) {
