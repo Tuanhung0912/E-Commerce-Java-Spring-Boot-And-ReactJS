@@ -679,3 +679,49 @@ export const addNewDashboardSeller =
       setOpen(false);
     }
   };
+
+
+// ──── Wishlist Actions ────────────────────────────────────
+
+export const fetchWishlist = () => async (dispatch) => {
+    try {
+        dispatch({ type: "SET_WISHLIST_LOADING" });
+        const { data } = await api.get("/wishlist?pageSize=100&sortBy=createdAt&sortOrder=desc");
+        dispatch({
+            type: "SET_WISHLIST",
+            payload: data.content || [],
+            pagination: {
+                pageNumber: data.pageNumber,
+                pageSize: data.pageSize,
+                totalElements: data.totalElements,
+                totalPages: data.totalPages,
+                lastPage: data.lastPage,
+            },
+        });
+    } catch (error) {
+        console.log(error);
+        dispatch({ type: "SET_WISHLIST", payload: [], pagination: {} });
+    }
+};
+
+export const addToWishlist = (productId, toast) => async (dispatch) => {
+    try {
+        const { data } = await api.post(`/wishlist/products/${productId}`);
+        dispatch({ type: "ADD_WISHLIST_ITEM", payload: data });
+        toast.success("Added to wishlist");
+    } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message || "Failed to add to wishlist");
+    }
+};
+
+export const removeFromWishlist = (wishlistItemId, productId, toast) => async (dispatch) => {
+    try {
+        await api.delete(`/wishlist/${wishlistItemId}`);
+        dispatch({ type: "REMOVE_WISHLIST_ITEM", payload: wishlistItemId, productId });
+        toast.success("Removed from wishlist");
+    } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message || "Failed to remove from wishlist");
+    }
+};

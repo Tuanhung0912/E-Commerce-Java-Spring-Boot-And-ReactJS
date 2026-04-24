@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { FaShoppingCart } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaShoppingCart, FaHeart, FaRegHeart } from "react-icons/fa";
 import ProductViewModal from "./ProductViewModal";
 import truncateText from "../utils/truncateText";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "../../store/actions";
+import { addToCart, addToWishlist, removeFromWishlist, fetchWishlist } from "../../store/actions";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -25,6 +25,15 @@ const ProductCard = ({
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
+    const { wishlist, wishlistIds } = useSelector((state) => state.wishlist);
+
+    const isWishlisted = wishlistIds.includes(productId);
+
+    useEffect(() => {
+        if (user && wishlist.length === 0 && wishlistIds.length === 0) {
+            dispatch(fetchWishlist());
+        }
+    }, [user]);
 
     const handleProductView = (product) => {
         if (!about) {
@@ -57,6 +66,39 @@ const ProductCard = ({
         dispatch(addToCart(cartItems, 1, toast));
     };
 
+    const handleWishlistToggle = (e) => {
+        e.stopPropagation();
+        if (!user) {
+            toast((t) => (
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                        <FaHeart className="text-rose-500" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-slate-800">Login Required</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Please sign in to save items to your wishlist</p>
+                    </div>
+                    <button
+                        onClick={() => { toast.dismiss(t.id); navigate("/login"); }}
+                        className="ml-2 shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 transition-colors"
+                    >
+                        Login
+                    </button>
+                </div>
+            ), { duration: 4000, style: { padding: '12px 16px', borderRadius: '16px', maxWidth: '420px' } });
+            return;
+        }
+
+        if (isWishlisted) {
+            const wishlistItem = wishlist.find((item) => item.productId === productId);
+            if (wishlistItem) {
+                dispatch(removeFromWishlist(wishlistItem.wishlistItemId, productId, toast));
+            }
+        } else {
+            dispatch(addToWishlist(productId, toast));
+        }
+    };
+
     const productData = {
         id: productId,
         productName,
@@ -75,6 +117,27 @@ const ProductCard = ({
                 <span className="absolute top-3 left-3 z-10 inline-flex items-center rounded-full bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow-lg shadow-rose-200">
                     -{discount}%
                 </span>
+            )}
+
+            {/* Wishlist heart button */}
+            {!about && (
+                <button
+                    onClick={handleWishlistToggle}
+                    className={`absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full
+                        shadow-md backdrop-blur-sm transition-all duration-300
+                        ${isWishlisted
+                            ? "bg-rose-500 text-white shadow-rose-300 hover:bg-rose-600 scale-100"
+                            : "bg-white/80 text-slate-400 hover:bg-white hover:text-rose-500 hover:shadow-lg"
+                        }
+                        hover:scale-110 active:scale-95`}
+                    aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                    {isWishlisted ? (
+                        <FaHeart className="text-sm" />
+                    ) : (
+                        <FaRegHeart className="text-sm" />
+                    )}
+                </button>
             )}
 
             {/* Image */}

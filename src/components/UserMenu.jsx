@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { BiUser } from 'react-icons/bi';
-import { FaShoppingCart, FaUserShield } from 'react-icons/fa';
+import { FaShoppingCart, FaUserShield, FaHeart } from 'react-icons/fa';
 import { IoExitOutline } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
@@ -92,6 +92,16 @@ const UserMenu = () => {
                         >
                             <BiUser className="text-lg text-slate-400" />
                             Profile
+                        </Link>
+
+                        <Link
+                            to="/profile/wishlist"
+                            onClick={handleLinkClick}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700
+                                transition-colors duration-150 hover:bg-rose-50 hover:text-rose-600"
+                        >
+                            <FaHeart className="text-lg text-slate-400" />
+                            My Wishlist
                         </Link>
 
                         <Link
