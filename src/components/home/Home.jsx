@@ -4,7 +4,10 @@ import { useEffect } from "react";
 import { fetchProducts } from "../../store/actions";
 import ProductCard from "../shared/ProductCard";
 import Loader from "../shared/Loader";
-import { FaExclamationTriangle, FaArrowRight } from "react-icons/fa";
+import {
+    FaExclamationTriangle, FaArrowRight, FaShippingFast,
+    FaMoneyBillWave, FaHeadset, FaPercent, FaShieldAlt
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Home = () => {
@@ -21,7 +24,36 @@ const Home = () => {
     return (
         <div>
             {/* ─── Hero Banner ─────────────────────────── */}
-            <HeroBanner />
+            <div className="lg:px-14 sm:px-8 px-4 pt-6">
+                <div className="rounded-xl overflow-hidden">
+                    <HeroBanner />
+                </div>
+            </div>
+
+            {/* ─── Feature Icons Strip ────────────────── */}
+            <div className="lg:px-14 sm:px-8 px-4 py-6">
+                <div className="border border-slate-200 bg-white rounded-xl">
+                    <div className="px-6 py-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:divide-x lg:divide-slate-200">
+                        {[
+                            { icon: FaShippingFast, title: "Free Shipping", desc: "Free Shipping On All Orders" },
+                            { icon: FaMoneyBillWave, title: "Money Guarantee", desc: "30 Day Money Back Guarantee" },
+                            { icon: FaHeadset, title: "Online Support 24/7", desc: "Technical Support 24/7" },
+                            { icon: FaPercent, title: "Member Discount", desc: "Upto 40% Discount All Products" },
+                            { icon: FaShieldAlt, title: "Secure Payment", desc: "All Cards Accepted" },
+                        ].map(({ icon: Icon, title, desc }) => (
+                            <div key={title} className="flex items-center gap-3 pl-4 first:pl-0">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
+                                    <Icon className="text-lg" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-slate-800 truncate">{title}</p>
+                                    <p className="text-xs text-slate-500 truncate">{desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
 
             {/* ─── Featured Products ───────────────────── */}
             <div className="lg:px-14 sm:px-8 px-4 py-16">

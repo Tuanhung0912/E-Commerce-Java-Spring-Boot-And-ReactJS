@@ -39,7 +39,7 @@ const HeroBanner = () => {
                 {bannerLists.map((item, i) => (
                     <SwiperSlide key={item.id}>
                         <div
-                            className={`relative overflow-hidden sm:h-[520px] h-[400px] bg-gradient-to-br ${gradients[i % gradients.length]}`}
+                            className={`relative overflow-hidden sm:h-[420px] h-[320px] bg-gradient-to-br ${gradients[i % gradients.length]}`}
                         >
                             {/* Decorative circles */}
                             <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-white/10 blur-sm" />
