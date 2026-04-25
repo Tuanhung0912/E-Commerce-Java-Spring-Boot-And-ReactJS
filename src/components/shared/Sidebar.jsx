@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaTachometerAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaArrowLeft, FaStore } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom'
 import { adminNavigation, sellerNavigation } from '../utils';
@@ -42,6 +42,20 @@ const Sidebar = ({isProfileLayout = false}) => {
                             </li>
                         ))}
                     </ul>
+                </li>
+
+                {/* Back To Store */}
+                <li className="mt-auto -mx-2">
+                    <Link
+                        to="/"
+                        className="group flex gap-x-3 items-center rounded-md p-2 text-sm font-semibold leading-6
+                            text-gray-400 hover:bg-indigo-600/20 hover:text-white transition-all duration-200"
+                    >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 group-hover:text-indigo-300 transition-colors">
+                            <FaStore className="text-sm" />
+                        </div>
+                        Back To Store
+                    </Link>
                 </li>
             </ul>
         </nav>

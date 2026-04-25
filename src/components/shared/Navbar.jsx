@@ -166,7 +166,8 @@ const Navbar = () => {
                     </div>
             </div>
 
-            {/* ═══ ROW 2: Categories + Nav Links (seamless, same bg) ═══ */}
+            {/* ═══ ROW 2: Categories + Nav Links (hidden on admin pages) ═══ */}
+            {!path.startsWith("/admin") && (
             <div className="hidden sm:block border-t border-white/10">
                 <div className="lg:px-14 sm:px-8 px-4 flex items-center gap-2">
 
@@ -242,6 +243,7 @@ const Navbar = () => {
                     </ul>
                 </div>
             </div>
+            )}
 
             {/* ─── Mobile Nav Dropdown ─────────────────── */}
             {navbarOpen && (
