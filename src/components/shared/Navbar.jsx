@@ -68,11 +68,10 @@ const Navbar = () => {
     ];
 
     return (
-        <nav className={`z-50 sticky top-0 transition-all duration-300 ${scrolled ? "shadow-lg shadow-slate-900/20" : ""}`}>
+        <nav className={`z-50 sticky top-0 transition-all duration-300 ${scrolled ? "bg-slate-900/95 backdrop-blur-md shadow-lg shadow-slate-900/20" : "bg-slate-900"}`}>
 
             {/* ═══ ROW 1: Logo + SearchBar + Cart/Auth ═══ */}
-            <div className={`transition-colors duration-300 ${scrolled ? "bg-slate-900/95 backdrop-blur-md" : "bg-slate-900"}`}>
-                <div className="h-[60px] lg:px-14 sm:px-8 px-4 w-full flex items-center gap-5">
+            <div className="h-[60px] lg:px-14 sm:px-8 px-4 w-full flex items-center gap-5">
 
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2.5 group shrink-0">
@@ -165,13 +164,11 @@ const Navbar = () => {
                             )}
                         </button>
                     </div>
-                </div>
             </div>
 
-            {/* ═══ ROW 2: Categories + Nav Links ═══ */}
-            <div className={`hidden sm:block transition-colors duration-300 border-t border-white/5
-                ${scrolled ? "bg-slate-900/95 backdrop-blur-md" : "bg-slate-900"}`}>
-                <div className="lg:px-14 sm:px-8 px-4 flex items-center gap-1">
+            {/* ═══ ROW 2: Categories + Nav Links (seamless, same bg) ═══ */}
+            <div className="hidden sm:block border-t border-white/10">
+                <div className="lg:px-14 sm:px-8 px-4 flex items-center gap-2">
 
                     {/* Categories dropdown */}
                     <div className="relative" onMouseEnter={handleMegaEnter} onMouseLeave={handleMegaLeave}>
@@ -224,7 +221,7 @@ const Navbar = () => {
                     </div>
 
                     {/* Nav Links */}
-                    <ul className="flex items-center gap-1 ml-2">
+                    <ul className="flex items-center gap-2 ml-3">
                         {navLinks.map(({ to, label }) => (
                             <li key={to}>
                                 <Link
