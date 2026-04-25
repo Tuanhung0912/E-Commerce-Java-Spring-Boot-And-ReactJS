@@ -129,20 +129,22 @@ const WishList = () => {
                                     className="group rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden
                                         transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1"
                                 >
-                                    {/* Image */}
-                                    <div className="w-full overflow-hidden aspect-[3/2] bg-slate-50">
-                                        <img
-                                            src={item.productImage?.startsWith('http') ? item.productImage : `${import.meta.env.VITE_BACK_END_URL}/images/${item.productImage}`}
-                                            alt={item.productName}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
-                                    </div>
+                                    {/* Clickable area → Product Detail */}
+                                    <Link to={`/products/${item.productId}`} className="block">
+                                        {/* Image */}
+                                        <div className="w-full overflow-hidden aspect-[3/2] bg-slate-50">
+                                            <img
+                                                src={item.productImage?.startsWith('http') ? item.productImage : `${import.meta.env.VITE_BACK_END_URL}/images/${item.productImage}`}
+                                                alt={item.productName}
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
+                                        </div>
 
-                                    {/* Content */}
-                                    <div className="p-4">
-                                        <h3 className="text-sm font-semibold text-slate-800 leading-tight line-clamp-2">
-                                            {item.productName}
-                                        </h3>
+                                        {/* Content */}
+                                        <div className="p-4">
+                                            <h3 className="text-sm font-semibold text-slate-800 leading-tight line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                                                {item.productName}
+                                            </h3>
 
                                         <div className="flex items-baseline gap-2 mt-2">
                                             {item.productSpecialPrice ? (
@@ -166,30 +168,31 @@ const WishList = () => {
                                                 Saved {formatDate(item.createdAt)}
                                             </p>
                                         )}
-
-                                        {/* Actions */}
-                                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-                                            <button
-                                                onClick={() => handleAddToCart(item)}
-                                                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl
-                                                    text-xs font-semibold text-white
-                                                    bg-indigo-500 shadow-sm shadow-indigo-200
-                                                    hover:bg-indigo-600 hover:shadow-md transition-all duration-200"
-                                            >
-                                                <FaShoppingCart className="text-[10px]" />
-                                                Add to Cart
-                                            </button>
-                                            <button
-                                                onClick={() => handleRemove(item.wishlistItemId, item.productId)}
-                                                className="flex h-9 w-9 items-center justify-center rounded-xl
-                                                    border border-slate-200 text-slate-400
-                                                    hover:border-red-200 hover:bg-red-50 hover:text-red-500
-                                                    transition-all duration-200"
-                                                aria-label="Remove from wishlist"
-                                            >
-                                                <FaTrash className="text-xs" />
-                                            </button>
                                         </div>
+                                    </Link>
+
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-2 px-4 pb-4 pt-3 border-t border-slate-100">
+                                        <button
+                                            onClick={() => handleAddToCart(item)}
+                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl
+                                                text-xs font-semibold text-white
+                                                bg-indigo-500 shadow-sm shadow-indigo-200
+                                                hover:bg-indigo-600 hover:shadow-md transition-all duration-200"
+                                        >
+                                            <FaShoppingCart className="text-[10px]" />
+                                            Add to Cart
+                                        </button>
+                                        <button
+                                            onClick={() => handleRemove(item.wishlistItemId, item.productId)}
+                                            className="flex h-9 w-9 items-center justify-center rounded-xl
+                                                border border-slate-200 text-slate-400
+                                                hover:border-red-200 hover:bg-red-50 hover:text-red-500
+                                                transition-all duration-200"
+                                            aria-label="Remove from wishlist"
+                                        >
+                                            <FaTrash className="text-xs" />
+                                        </button>
                                     </div>
                                 </div>
                             ))}
