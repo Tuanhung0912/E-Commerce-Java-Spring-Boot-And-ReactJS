@@ -6,6 +6,7 @@ import { RxCross2 } from "react-icons/rx";
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import UserMenu from "../UserMenu";
+import SearchBar from "./SearchBar";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
@@ -31,13 +32,13 @@ const Navbar = () => {
 
     return (
         <nav
-            className={`h-[70px] z-50 flex items-center sticky top-0 transition-all duration-300
+            className={`z-50 sticky top-0 transition-all duration-300
                 ${scrolled
                     ? "bg-slate-900/95 backdrop-blur-md shadow-lg shadow-slate-900/20"
                     : "bg-custom-gradient"
                 }`}
         >
-            <div className="lg:px-14 sm:px-8 px-4 w-full flex items-center justify-between">
+            <div className="h-[64px] lg:px-14 sm:px-8 px-4 w-full flex items-center gap-6">
 
                 {/* ─── Left: Logo ──────────────────────── */}
                 <Link to="/" className="flex items-center gap-2.5 group shrink-0">
@@ -70,7 +71,12 @@ const Navbar = () => {
                     ))}
                 </ul>
 
-                {/* ─── Right: Cart + Auth (OUTSIDE nav links) ── */}
+                {/* ─── Center: Search Bar (fills remaining space) ── */}
+                <div className="hidden sm:block flex-1 mx-4">
+                    <SearchBar />
+                </div>
+
+                {/* ─── Right: Cart + Auth ─────────────── */}
                 <div className="flex items-center gap-3 shrink-0">
                     {/* Cart */}
                     {user && user.id ? (
@@ -152,7 +158,7 @@ const Navbar = () => {
 
             {/* ─── Mobile Nav Dropdown ─────────────────── */}
             {navbarOpen && (
-                <div className="sm:hidden absolute left-0 top-[70px] w-full bg-slate-900/98 backdrop-blur-lg shadow-xl border-t border-white/10"
+                <div className="sm:hidden absolute left-0 top-[64px] w-full bg-slate-900/98 backdrop-blur-lg shadow-xl border-t border-white/10"
                     style={{ zIndex: 9998 }}
                 >
                     <ul className="flex flex-col py-2 px-4">
