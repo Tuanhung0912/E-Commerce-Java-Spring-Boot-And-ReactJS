@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import HeroBanner from "./HeroBanner";
+import TopCategories from "./TopCategories";
 import { useEffect } from "react";
 import { fetchProducts } from "../../store/actions";
 import ProductCard from "../shared/ProductCard";
@@ -54,6 +55,9 @@ const Home = () => {
                     </div>
                 </div>
             </div>
+
+            {/* ─── Top Categories ─────────────────────── */}
+            <TopCategories />
 
             {/* ─── Featured Products ───────────────────── */}
             <div className="lg:px-14 sm:px-8 px-4 py-16">
